@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAVIYA ND MINI PAIR</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-image: url("https://files.catbox.moe/kyds74.jpeg");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .box {
+      width: 300px;
+      height: 330px;
+      padding: 20px;
+      text-align: center;
+      background-color: rgba(255,255,255,0.5);
+      border-radius: 10px;
+      transform: perspective(1000px) rotateY(0deg);
+    }
+
+    #text, .centered-text, .input-container input {
+      color: #000;
+    }
+
+    .input-container {
+      display: flex;
+      background: linear-gradient(45deg, #c5c5c5 0%, #ffffff 100%);
+      border-radius: 1rem;
+      padding: 0.3rem;
+      gap: 0.3rem;
+      max-width: 300px;
+      width: 100%;
+    }
+
+    .input-container input {
+      border-radius: 0.8rem 0 0 0.8rem;
+      background: #e8e8e8;
+      width: 75%;
+      padding: 1rem;
+      border: none;
+      border-left: 2px solid #ff9d9d;
+      color: #5e5e5e;
+      font-size: 16px;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .input-container input:focus {
+      border-left: 2px solid #ff9d9d;
+      outline: none;
+    }
+
+    .input-container button {
+      width: 25%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #8a2be2 0%, #800080 100%);
+      font-weight: 900;
+      letter-spacing: 0.1rem;
+      text-transform: uppercase;
+      color: white;
+      border: none;
+      border-radius: 0 1rem 1rem 0;
+      transition: all 0.2s ease-in-out;
+      cursor: pointer;
+    }
+
+    .input-container button:hover {
+      background: linear-gradient(135deg, #A8E4A0 0%, #32CD32 100%);
+      color: red;
+    }
+
+    @media (max-width: 500px) {
+      .input-container {
+        flex-direction: column;
+      }
+      .input-container input, .input-container button {
+        border-radius: 0.8rem;
+        width: 100%;
+      }
+    }
+
+    .centered-text {
+      text-align: center;
+    }
+
+    #pair span {
+      cursor: pointer;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="box" id="box">
+      <div id="text">
+        <i class="fa fa-user"></i>
+        <h3 class="centered-text">♥️𝐋𝐈𝐍𝐊 𝐖𝐈𝐓𝐇 𝐏𝐇𝐎𝐍𝐄 𝐍𝐔𝐌𝐁𝐄𝐑♥️</h3>
+        <h4>🎭𝐑𝐀𝐕𝐈𝐘𝐀 𝐌𝐃 𝐌𝐈𝐍𝐈 𝐁𝐎𝐓🎭</h4>
+        <h6>⚙ Enter your number with country code ⚙</h6>
+        <div class="input-container">
+          <input type="text" id="number" placeholder="+94xxxxxxxxx">
+          <button id="submit">Submit</button>
+        </div>
+        <a id="waiting-message" class="centered-text" style="display: none;">In process...</a>
+        <main id="pair"></main>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    const pairContainer = document.getElementById("pair");
+    const submitBtn = document.getElementById("submit");
+    const numberInput = document.getElementById("number");
+
+    async function copyCode() {
+      const codeEl = document.getElementById("copy");
+      if (!codeEl) return;
+      const originalText = codeEl.innerText;
+      const code = originalText.replace('CODE: ', '');
+      await navigator.clipboard.writeText(code);
+      codeEl.innerText = "COMPLETE ✅";
+      codeEl.style.color = "blue";
+      setTimeout(() => {
+        codeEl.innerText = originalText;
+        codeEl.style.color = "red";
+      }, 1000);
+    }
+
+    submitBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const rawNumber = numberInput.value.replace(/[^0-9]/g, "");
+      if (!rawNumber) {
+        pairContainer.innerHTML = '<a style="color:black;font-weight:bold">❗Enter your WhatsApp number with country code.</a><br><br>';
+        return;
+      } else if (rawNumber.length < 11) {
+        pairContainer.innerHTML = '<a style="color:black;font-weight:bold">❌Invalid number format❌</a><br><br>';
+        return;
+      }
+
+      numberInput.value = "+" + rawNumber;
+      numberInput.style.color = "black";
+      numberInput.style.fontSize = "20px";
+      pairContainer.innerHTML = '<a style="color:black;font-weight:bold">Please wait... </a><br><br>';
+
+      try {
+        const { data } = await axios.get(`/code?number=${rawNumber}`);
+        const code = data.code || "Service Unavailable";
+        pairContainer.innerHTML = `<span id="copy" onclick="copyCode()" style="color:red;font-weight:bold">CODE: <span style="color:black;font-weight:bold">${code}</span></span><br><br><br>`;
+      } catch (err) {
+        pairContainer.innerHTML = '<a style="color:red;font-weight:bold">❌ Failed to fetch code ❌</a>';
+      }
+    });
+  </script>
+</body>
+</html>
